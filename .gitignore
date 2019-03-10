@@ -13,6 +13,7 @@ Thumbs.db
 
 # Build Artifacts 
 
+.idea/
 .gradle/
 build/
 target/
