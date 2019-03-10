@@ -6,6 +6,9 @@ import com.kaixin.eshop.cache.ha.http.HttpClientUtils;
 import com.kaixin.eshop.cache.ha.model.ProductInfo;
 import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
+import com.netflix.hystrix.HystrixCommandKey;
+import com.netflix.hystrix.HystrixThreadPoolKey;
+import com.netflix.hystrix.HystrixThreadPoolProperties;
 
 /**
  * @description: 获取商品信息
@@ -16,7 +19,12 @@ public class GetProductInfoCommand extends HystrixCommand<ProductInfo> {
     private Long productId;
     
     public GetProductInfoCommand(Long productId) {
-        super(HystrixCommandGroupKey.Factory.asKey("GetProductInfoGroup"));
+        super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("ProductInfoService"))
+                .andCommandKey(HystrixCommandKey.Factory.asKey("GetProductInfoCommand"))
+                .andThreadPoolKey(HystrixThreadPoolKey.Factory.asKey("GetProductInfoPool"))
+                .andThreadPoolPropertiesDefaults(HystrixThreadPoolProperties.Setter()
+                    .withCoreSize(15)
+                    .withQueueSizeRejectionThreshold(10)));
         this.productId = productId;
     }
 
