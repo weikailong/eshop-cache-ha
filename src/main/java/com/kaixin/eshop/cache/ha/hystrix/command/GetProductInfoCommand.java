@@ -1,6 +1,7 @@
 package com.kaixin.eshop.cache.ha.hystrix.command;
 
 import com.alibaba.fastjson.JSONObject;
+import com.kaixin.eshop.cache.ha.cache.local.LocationCache;
 import com.kaixin.eshop.cache.ha.http.HttpClientUtils;
 import com.kaixin.eshop.cache.ha.model.ProductInfo;
 import com.netflix.hystrix.HystrixCommand;
@@ -16,7 +17,7 @@ public class GetProductInfoCommand extends HystrixCommand<ProductInfo> {
     
     public GetProductInfoCommand(Long productId) {
         super(HystrixCommandGroupKey.Factory.asKey("GetProductInfoGroup"));
-        this.productId =productId;
+        this.productId = productId;
     }
 
     @Override
