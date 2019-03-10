@@ -2,11 +2,17 @@ package com.kaixin.eshop.cache.ha.controller;
 
 import com.kaixin.eshop.cache.ha.http.HttpClientUtils;
 import com.kaixin.eshop.cache.ha.hystrix.command.GetProductInfoCommand;
+import com.kaixin.eshop.cache.ha.hystrix.command.GetProductInfosCommand;
 import com.kaixin.eshop.cache.ha.model.ProductInfo;
 import com.netflix.hystrix.HystrixCommand;
+import com.netflix.hystrix.HystrixObservableCommand;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import rx.Observable;
+import rx.Observer;
+
+import java.util.concurrent.Future;
 
 /**
  * @description: 缓存controller
@@ -45,8 +51,53 @@ public class CacheController {
         // 调用商品服务的接口，获取商品id对应的商品的最新数据
         // 用HttpClient去调用商品服务的http接口
         HystrixCommand<ProductInfo> getProductInfoCommand = new GetProductInfoCommand(productId);
-        ProductInfo response = getProductInfoCommand.execute();
-        System.out.println(response);
+        ProductInfo productInfo = getProductInfoCommand.execute();
+
+        // 使用异步都方式获取
+//        Future<ProductInfo> future = getProductInfoCommand.queue();
+//        try {
+//            Thread.sleep(1000);
+//            System.out.println(future.get());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
+        System.out.println(productInfo);
+        return "success";
+    }
+
+    /**
+     * nginx开始，各级缓存都失效了，nginx发送很多的请求直接到缓存服务要求拉取最原始都数据
+     * @param productIds 商品id字符串数组
+     * @return
+     */
+    @RequestMapping("/getProductInfos")
+    @ResponseBody
+    public String getProductInfo(String productIds){
+        
+        HystrixObservableCommand<ProductInfo> getProductInfosCommand = 
+                new GetProductInfosCommand(productIds.split(","));
+        Observable<ProductInfo> observable = getProductInfosCommand.observe();
+        
+//        observable = getProductInfosCommand.toObservable(); // 还没有执行
+        
+        observable.subscribe(new Observer<ProductInfo>() { // 等到调用subscribe然后才会执行
+            @Override
+            public void onCompleted() {
+                System.out.println("获取完了所有都商品数据");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onNext(ProductInfo productInfo) {
+                System.out.println(productInfo);
+            }
+        });
+
         return "success";
     }
     
