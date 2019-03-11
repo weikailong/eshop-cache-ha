@@ -3,15 +3,11 @@ package com.kaixin.eshop.cache.ha.controller;
 import com.kaixin.eshop.cache.ha.http.HttpClientUtils;
 import com.kaixin.eshop.cache.ha.hystrix.command.GetCityNameCommand;
 import com.kaixin.eshop.cache.ha.hystrix.command.GetProductInfoCommand;
-import com.kaixin.eshop.cache.ha.hystrix.command.GetProductInfosCommand;
 import com.kaixin.eshop.cache.ha.model.ProductInfo;
 import com.netflix.hystrix.HystrixCommand;
-import com.netflix.hystrix.HystrixObservableCommand;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import rx.Observable;
-import rx.Observer;
 
 /**
  * @description: 缓存controller
@@ -78,31 +74,41 @@ public class CacheController {
      */
     @RequestMapping("/getProductInfos")
     @ResponseBody
-    public String getProductInfo(String productIds){
+    public String getProductInfos(String productIds){
         
-        HystrixObservableCommand<ProductInfo> getProductInfosCommand = 
-                new GetProductInfosCommand(productIds.split(","));
-        Observable<ProductInfo> observable = getProductInfosCommand.observe();
+//        HystrixObservableCommand<ProductInfo> getProductInfosCommand = 
+//                new GetProductInfosCommand(productIds.split(","));
+//        Observable<ProductInfo> observable = getProductInfosCommand.observe();
+//        
+////        observable = getProductInfosCommand.toObservable(); // 还没有执行
+//        
+//        observable.subscribe(new Observer<ProductInfo>() { // 等到调用subscribe然后才会执行
+//            @Override
+//            public void onCompleted() {
+//                System.out.println("获取完了所有都商品数据");
+//            }
+//
+//            @Override
+//            public void onError(Throwable e) {
+//                e.printStackTrace();
+//            }
+//
+//            @Override
+//            public void onNext(ProductInfo productInfo) {
+//                System.out.println(productInfo);
+//            }
+//        });
+
+        for (String productId : productIds.split(",")) {
+            GetProductInfoCommand getProductInfoCommand = new GetProductInfoCommand(
+                    Long.valueOf(productId));
+
+            ProductInfo productInfo = getProductInfoCommand.execute();
+            System.out.println(productInfo);
+            System.out.println(getProductInfoCommand.isResponseFromCache());
+            
+        }
         
-//        observable = getProductInfosCommand.toObservable(); // 还没有执行
-        
-        observable.subscribe(new Observer<ProductInfo>() { // 等到调用subscribe然后才会执行
-            @Override
-            public void onCompleted() {
-                System.out.println("获取完了所有都商品数据");
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onNext(ProductInfo productInfo) {
-                System.out.println(productInfo);
-            }
-        });
-
         return "success";
     }
     
