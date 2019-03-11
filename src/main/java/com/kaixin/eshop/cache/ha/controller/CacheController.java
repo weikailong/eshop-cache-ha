@@ -1,6 +1,7 @@
 package com.kaixin.eshop.cache.ha.controller;
 
 import com.kaixin.eshop.cache.ha.http.HttpClientUtils;
+import com.kaixin.eshop.cache.ha.hystrix.command.GetBrandNameCommand;
 import com.kaixin.eshop.cache.ha.hystrix.command.GetCityNameCommand;
 import com.kaixin.eshop.cache.ha.hystrix.command.GetProductInfoCommand;
 import com.kaixin.eshop.cache.ha.model.ProductInfo;
@@ -47,13 +48,18 @@ public class CacheController {
         // 用HttpClient去调用商品服务的http接口
         HystrixCommand<ProductInfo> getProductInfoCommand = new GetProductInfoCommand(productId);
         ProductInfo productInfo = getProductInfoCommand.execute();
-
+ 
         // 城市名称(基于信号量来实现本地缓存都限流）
         Long cityId = productInfo.getCityId();
         GetCityNameCommand getCityNameCommand = new GetCityNameCommand(cityId);
         String cityName = getCityNameCommand.execute();
         productInfo.setCityName(cityName);
-        
+
+        Long brandId = productInfo.getBrandId();
+        GetBrandNameCommand getBrandNameCommand = new GetBrandNameCommand(brandId);
+        String brandName = getBrandNameCommand.execute();
+        productInfo.setBrandName(brandName);
+
         // 使用异步都方式获取
 //        Future<ProductInfo> future = getProductInfoCommand.queue();
 //        try {

@@ -21,6 +21,25 @@ public class ProductInfo {
     private String modifiedTime;
     private Long cityId;
     private String cityName;
+    
+    private Long brandId;
+    private String brandName;
+
+    public Long getBrandId() {
+        return brandId;
+    }
+
+    public void setBrandId(Long brandId) {
+        this.brandId = brandId;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
 
     public Long getId() {
         return id;
@@ -133,6 +152,8 @@ public class ProductInfo {
                 ", modifiedTime='" + modifiedTime + '\'' +
                 ", cityId=" + cityId +
                 ", cityName='" + cityName + '\'' +
+                ", brandId=" + brandId +
+                ", brandName='" + brandName + '\'' +
                 '}';
     }
 
